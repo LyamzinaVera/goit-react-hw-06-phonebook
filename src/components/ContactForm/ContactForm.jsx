@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React,{ useState } from 'react';
 import PropTypes from 'prop-types';
 import shortid from 'shortid';
-import style from 'components/ContactForm/ContactForm.module.css'
+import style from './ContactForm.module.css'
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts, addContact } from 'redux/contactsSlice';
 
-export default function ContactForm({onSubmit}){
+export default function ContactForm(){
 
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
  
- const nameInputId = shortid.generate();
- const numberInputId = shortid.generate();
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
   const handleNameChange = e => {
     setName(e.currentTarget.value);
@@ -20,18 +22,26 @@ export default function ContactForm({onSubmit}){
 
  const handleSubmit = e => {
     e.preventDefault();
-    onSubmit({ name, number}); 
-    setName('');
-    setNumber('');
-  };
-
+    const newContact = {
+      name,
+      number,
+      id: shortid.generate(),
+    };
+  contacts.find(contact => contact.name.toLowerCase() === name.toLowerCase())
+  ? alert(`${name} is already in contacts`)
+  : dispatch(addContact(newContact));
+reset();
+};
+const reset = () => {
+  setName('');
+  setNumber('');
+};
   
     return (
       <div className={style.border}>
         <form className={style.form} onSubmit={handleSubmit}>
-          <label htmlFor={nameInputId} className={style.label}>Name</label>
+          <label className={style.label}>Name</label>
           <input
-              id={nameInputId}
               className={style.input}
               type="text"
               name="name"
@@ -41,9 +51,8 @@ export default function ContactForm({onSubmit}){
               required
               onChange={handleNameChange}
             />
-          <label htmlFor={numberInputId} className={style.label}>Number</label>
+          <label className={style.label}>Number</label>
           <input
-              id={numberInputId}
               className={style.input}
               type="tel"
               name="number"
@@ -61,6 +70,5 @@ export default function ContactForm({onSubmit}){
 
 
   ContactForm.propTypes = {
-    onSubmit: PropTypes.func.isRequired,
+    handleSubmit: PropTypes.func
   };
-  
